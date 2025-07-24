@@ -1,3 +1,23 @@
+# Greenbank Tutor System
+
+## Setup (New Deployment)
+
+Create a `.env` file in the project root with the following variables:
+
+```
+MONGODB_URI=your_new_mongodb_atlas_connection_string
+EMAIL_USER=greenbanktutorsystem@gmail.com
+EMAIL_PASS=your_gmail_app_password
+MANAGER_PASSWORD=Academic123
+```
+
+- `MONGODB_URI`: Your new MongoDB Atlas connection string (for the new/separate database)
+- `EMAIL_USER`: The Google account used to send emails (set to `greenbanktutorsystem@gmail.com`)
+- `EMAIL_PASS`: The Gmail App Password for the above account
+- `MANAGER_PASSWORD`: The password for the manager login (set to `Academic123`)
+
+---
+
 # Tutor System
 
 A comprehensive web-based tutoring system that allows students to book sessions with qualified tutors, and managers to oversee the entire operation.
