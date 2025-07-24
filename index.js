@@ -47,7 +47,16 @@ app.use(express.static('public', {
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+  tls: true,
+  tlsAllowInvalidCertificates: false,
+  tlsAllowInvalidHostnames: false
+}).then(() => {
+  console.log('Connected to MongoDB Atlas');
+}).catch((error) => {
+  console.error('MongoDB connection error:', error);
 });
 
 // Models
