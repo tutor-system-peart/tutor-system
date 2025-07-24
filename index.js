@@ -461,10 +461,10 @@ app.put('/api/bookings/:id/complete', authenticateToken, async (req, res) => {
     booking.status = 'completed';
     await booking.save();
     
-    // Send completion notification email to tutorsystemparnell@gmail.com
+    // Send completion notification email to greenbanktutorsystem@gmail.com
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: 'tutorsystemparnell@gmail.com',
+      to: 'greenbanktutorsystem@gmail.com',
       subject: `Session Completed - ${booking.subject}`,
       html: `
         <h2>Session Completion Report</h2>
