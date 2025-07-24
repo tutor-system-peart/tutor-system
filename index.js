@@ -48,11 +48,10 @@ app.use(express.static('public', {
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 5000,
+  serverSelectionTimeoutMS: 30000,
   socketTimeoutMS: 45000,
-  tls: true,
-  tlsAllowInvalidCertificates: false,
-  tlsAllowInvalidHostnames: false
+  bufferCommands: false,
+  bufferMaxEntries: 0
 }).then(() => {
   console.log('Connected to MongoDB Atlas');
 }).catch((error) => {
