@@ -528,7 +528,7 @@ app.post('/api/bookings/:id/message', authenticateToken, async (req, res) => {
       <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #667eea;">
         ${messageContent.replace(/\n/g, '<br>')}
       </div>
-      <p>Please respond to this email if you need to communicate with your tutor.</p>
+      <p>Please use the "Reply All" button if you need to communicate with your tutor, so both parties receive your message.</p>
       <p>Best regards,<br>Tutoring System</p>
     `;
     
