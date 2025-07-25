@@ -532,24 +532,16 @@ app.post('/api/bookings/:id/message', authenticateToken, async (req, res) => {
       <p>Best regards,<br>Tutoring System</p>
     `;
     
-    // Send the same email to both student and tutor
-    const studentMailOptions = {
+    // Send one email to both student and tutor simultaneously
+    const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: studentEmail,
+      to: `${studentEmail}, ${booking.tutor.email}`,
       subject: `Message from Tutor - ${subject}`,
       html: emailContent
     };
     
-    const tutorMailOptions = {
-      from: process.env.EMAIL_USER,
-      to: booking.tutor.email,
-      subject: `Message from Tutor - ${subject}`,
-      html: emailContent
-    };
-    
-    // Send both emails
-    await transporter.sendMail(studentMailOptions);
-    await transporter.sendMail(tutorMailOptions);
+    // Send single email to both recipients
+    await transporter.sendMail(mailOptions);
     
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.json({ message: 'Message sent successfully to student and tutor' });
