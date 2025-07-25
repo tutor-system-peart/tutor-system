@@ -518,42 +518,33 @@ app.post('/api/bookings/:id/message', authenticateToken, async (req, res) => {
       return res.status(403).json({ message: 'You can only send messages for bookings assigned to you' });
     }
     
-    // Send message email to student
+    // Create the same email content for both tutor and student
+    const emailContent = `
+      <h2>Message from Your Tutor</h2>
+      <p>Dear ${booking.user.firstName} ${booking.user.surname},</p>
+      <p>You have received a message from your tutor ${booking.tutor.firstName} ${booking.tutor.surname} regarding your tutoring session.</p>
+      <p><strong>Session:</strong> ${subject}</p>
+      <p><strong>Message:</strong></p>
+      <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #667eea;">
+        ${messageContent.replace(/\n/g, '<br>')}
+      </div>
+      <p>Please respond to this email if you need to communicate with your tutor.</p>
+      <p>Best regards,<br>Tutoring System</p>
+    `;
+    
+    // Send the same email to both student and tutor
     const studentMailOptions = {
       from: process.env.EMAIL_USER,
       to: studentEmail,
       subject: `Message from Tutor - ${subject}`,
-      html: `
-        <h2>Message from Your Tutor</h2>
-        <p>Dear ${booking.user.firstName} ${booking.user.surname},</p>
-        <p>You have received a message from your tutor ${booking.tutor.firstName} ${booking.tutor.surname} regarding your tutoring session.</p>
-        <p><strong>Session:</strong> ${subject}</p>
-        <p><strong>Message:</strong></p>
-        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #667eea;">
-          ${messageContent.replace(/\n/g, '<br>')}
-        </div>
-        <p>Please respond to this email if you need to communicate with your tutor.</p>
-        <p>Best regards,<br>Tutoring System</p>
-      `
+      html: emailContent
     };
     
-    // Send copy of message email to tutor
     const tutorMailOptions = {
       from: process.env.EMAIL_USER,
       to: booking.tutor.email,
-      subject: `Message Copy - ${subject}`,
-      html: `
-        <h2>Message Copy</h2>
-        <p>Dear ${booking.tutor.firstName} ${booking.tutor.surname},</p>
-        <p>This is a copy of the message you sent to ${booking.user.firstName} ${booking.user.surname} regarding your tutoring session.</p>
-        <p><strong>Session:</strong> ${subject}</p>
-        <p><strong>Message:</strong></p>
-        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #667eea;">
-          ${messageContent.replace(/\n/g, '<br>')}
-        </div>
-        <p>This message has been sent to the student at: ${studentEmail}</p>
-        <p>Best regards,<br>Tutoring System</p>
-      `
+      subject: `Message from Tutor - ${subject}`,
+      html: emailContent
     };
     
     // Send both emails

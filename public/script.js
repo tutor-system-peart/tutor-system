@@ -1290,7 +1290,11 @@ async function assignMultipleSubjects(tutorId) {
         state.selectedTutor = null;
         state.selectedTutorObj = null;
         
-        render();
+        // Show success message
+        app.innerHTML = showSuccess('Subjects successfully assigned!');
+        setTimeout(() => {
+            render();
+        }, 2000);
         console.log('render completed');
     } catch (e) {
         console.error('Error in assignMultipleSubjects:', e);
