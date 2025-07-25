@@ -832,13 +832,13 @@ app.get('*', (req, res) => {
 // Initialize default manager account
 const initializeManager = async () => {
   try {
-    const existingManager = await User.findOne({ email: process.env.EMAIL_USER });
+    const existingManager = await User.findOne({ email: 'greenbanktutorsystem@gmail.com' });
     if (!existingManager) {
-      const hashedPassword = await bcrypt.hash(process.env.MANAGER_PASSWORD, 10);
+      const hashedPassword = await bcrypt.hash('Academic123', 10);
       const manager = new User({
         firstName: 'Manager',
         surname: 'Account',
-        email: process.env.EMAIL_USER,
+        email: 'greenbanktutorsystem@gmail.com',
         password: hashedPassword,
         isAdmin: true
       });
