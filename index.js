@@ -63,7 +63,7 @@ app.use(express.static('public', {
 }));
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://tutorsystempeart:NaHKR1GMT5ioXG8I@cluster0.qy9ov3l.mongodb.net/tutor_system_db?retryWrites=true&w=majority&appName=Cluster0', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   serverSelectionTimeoutMS: 30000,
