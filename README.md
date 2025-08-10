@@ -23,7 +23,7 @@ This project is configured for deployment on Render. Follow these steps to deplo
 In your Render dashboard, add these environment variables:
 - `MONGODB_URI`: Your MongoDB Atlas connection string
 - `JWT_SECRET`: A secure random string for JWT signing
-- `EMAIL_USER`: `greenbanktutorsystem@gmail.com`
+- `EMAIL_USER`: `tutorsystempeart@gmail.com`
 - `EMAIL_PASS`: Your Gmail app password
 - `NODE_ENV`: `production`
 
@@ -36,7 +36,7 @@ Create a `.env` file in the project root with the following variables:
 
 ```
 MONGODB_URI=your_mongodb_atlas_connection_string
-EMAIL_USER=greenbanktutorsystem@gmail.com
+EMAIL_USER=tutorsystempeart@gmail.com
 EMAIL_PASS=your_gmail_app_password
 JWT_SECRET=your_secure_jwt_secret
 ```
@@ -67,7 +67,7 @@ A comprehensive web-based tutoring system that allows students to book sessions 
 - Complete sessions with duration tracking
 
 ### For Managers
-- Admin panel with manager credentials (greenbanktutorsystem@gmail.com / Academic123)
+- Admin panel with manager credentials (tutorsystempeart@gmail.com / Academic123)
 - Approve/reject tutor applications
 - Assign tutors to multiple subjects
 - Remove tutors and subjects
@@ -123,7 +123,7 @@ A comprehensive web-based tutoring system that allows students to book sessions 
 ## Default Manager Account
 
 The system automatically creates a default manager account:
-- **Email**: greenbanktutorsystem@gmail.com
+- **Email**: tutorsystempeart@gmail.com
 - **Password**: Academic123
 
 ## API Endpoints

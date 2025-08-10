@@ -485,10 +485,10 @@ app.put('/api/bookings/:id/complete', authenticateToken, async (req, res) => {
     booking.status = 'completed';
     await booking.save();
     
-    // Send completion notification email to greenbanktutorsystem@gmail.com
+    // Send completion notification email to manager
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: 'greenbanktutorsystem@gmail.com',
+      to: 'tutorsystempeart@gmail.com',
       subject: `Session Completed - ${booking.subject}`,
       html: `
         <h2>Session Completion Report</h2>
@@ -946,13 +946,13 @@ app.get('*', (req, res) => {
 // Initialize default manager account
 const initializeManager = async () => {
   try {
-    const existingManager = await User.findOne({ email: 'greenbanktutorsystem@gmail.com' });
+    const existingManager = await User.findOne({ email: 'tutorsystempeart@gmail.com' });
     if (!existingManager) {
       const hashedPassword = await bcrypt.hash('Academic123', 10);
       const manager = new User({
         firstName: 'Manager',
         surname: 'Account',
-        email: 'greenbanktutorsystem@gmail.com',
+        email: 'tutorsystempeart@gmail.com',
         password: hashedPassword,
         isAdmin: true
       });
