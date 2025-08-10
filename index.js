@@ -38,9 +38,27 @@ app.use(helmet({
   contentSecurityPolicy: false
 }));
 app.disable('x-powered-by');
+// Cache busting middleware
+app.use((req, res, next) => {
+  // Add cache control headers to prevent caching of HTML and JS files
+  if (req.path.endsWith('.html') || req.path.endsWith('.js') || req.path.endsWith('.css')) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+  }
+  next();
+});
+
 app.use(express.static('public', {
-  setHeaders: (res, path) => {
-    res.setHeader('Cache-Control', 'public, max-age=31536000');
+  setHeaders: (res, filePath) => {
+    // Only cache images and other static assets, not HTML/JS/CSS
+    if (filePath.endsWith('.html') || filePath.endsWith('.js') || filePath.endsWith('.css')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    } else {
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+    }
   }
 }));
 
@@ -793,6 +811,55 @@ app.delete('/api/admin/tutors/:id/remove', authenticateToken, async (req, res) =
   }
 });
 
+// Delete Booking (Manager only)
+app.delete('/api/admin/bookings/:id', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    
+    const booking = await Booking.findById(req.params.id)
+      .populate('user', 'firstName surname email')
+      .populate('tutor', 'firstName surname email');
+    
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+    
+    // Delete the booking
+    await Booking.findByIdAndDelete(req.params.id);
+    
+    // Send email notification to both student and tutor
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: `${booking.user.email}, ${booking.tutor.email}`,
+      subject: 'Booking Removed by Manager',
+      html: `
+        <h2>Booking Removal Notification</h2>
+        <p>A booking has been removed by the system manager.</p>
+        <p><strong>Booking Details:</strong></p>
+        <ul>
+          <li><strong>Subject:</strong> ${booking.subject}</li>
+          <li><strong>Student:</strong> ${booking.user.firstName} ${booking.user.surname}</li>
+          <li><strong>Tutor:</strong> ${booking.tutor.firstName} ${booking.tutor.surname}</li>
+          <li><strong>Time:</strong> ${booking.timePeriod || 'Not specified'}</li>
+          <li><strong>Date:</strong> ${booking.date ? booking.date.toLocaleDateString() : 'Not specified'}</li>
+          <li><strong>Status:</strong> ${booking.status}</li>
+        </ul>
+        <p>This booking has been permanently removed from the system.</p>
+        <p>Best regards,<br>Tutoring System</p>
+      `
+    };
+    
+    await transporter.sendMail(mailOptions);
+    
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.json({ message: 'Booking deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Get Pending Tutor Requests (Admin only)
 app.get('/api/admin/tutor-requests', authenticateToken, async (req, res) => {
   try {
@@ -859,6 +926,16 @@ app.put('/api/tutors/update', authenticateToken, async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
+});
+
+// Version endpoint for cache busting
+app.get('/api/version', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.json({ 
+    version: '1.1',
+    timestamp: new Date().toISOString(),
+    build: process.env.NODE_ENV === 'production' ? 'production' : 'development'
+  });
 });
 
 // Serve frontend

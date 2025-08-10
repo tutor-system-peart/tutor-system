@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Tutor Booking System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/modern-normalize/2.0.0/modern-normalize.min.css">
     <style>
@@ -466,6 +469,49 @@
             width: auto;
         }
         
+        /* Booking Management Styles */
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .bookings-list {
+            margin-top: 15px;
+        }
+        
+        .booking-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: #f9f9f9;
+            transition: all 0.3s ease;
+        }
+        
+        .booking-item:hover {
+            background: #f0f4ff;
+            border-color: #667eea;
+        }
+        
+        .booking-info {
+            margin-bottom: 10px;
+        }
+        
+        .booking-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
         @media (max-width: 600px) {
             body {
                 padding-top: 140px; /* More space for mobile */
@@ -838,6 +884,34 @@
             <!-- Content will be dynamically loaded by JavaScript -->
         </div>
     </div>
-    <script src="script.js"></script>
+    <script>
+        // Register service worker for cache management
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+
+        // Dynamic cache busting
+        fetch('/api/version')
+            .then(response => response.json())
+            .then(data => {
+                const script = document.createElement('script');
+                script.src = `script.js?v=${data.version}`;
+                document.body.appendChild(script);
+            })
+            .catch(() => {
+                // Fallback if version endpoint fails
+                const script = document.createElement('script');
+                script.src = 'script.js?v=1.1';
+                document.body.appendChild(script);
+            });
+    </script>
 </body>
 </html> 

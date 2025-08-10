@@ -1,0 +1,11 @@
+[33mcommit 45759ba822eea2c5381e004db1027f1d95dc127f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: tutor-system2025 <greenbanktutorsystem@gmail.com>
+Date:   Sun Aug 10 19:58:21 2025 +1200
+
+    Add tutor panel update functionality - tutors can change subjects and description
+
+.env
+index.js
+public/index.html
+public/script.js
+tatus --porcelain

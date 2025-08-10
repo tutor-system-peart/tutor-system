@@ -1,3 +1,22 @@
+// Cache busting - force reload if version changes
+(function() {
+    const currentVersion = '1.1';
+    const storedVersion = localStorage.getItem('app_version');
+    
+    if (storedVersion !== currentVersion) {
+        localStorage.setItem('app_version', currentVersion);
+        // Clear any cached data
+        localStorage.removeItem('user_token');
+        localStorage.removeItem('user_data');
+        // Force page reload to get fresh content
+        if (window.location.href.indexOf('?') > -1) {
+            window.location.href = window.location.href + '&v=' + currentVersion;
+        } else {
+            window.location.href = window.location.href + '?v=' + currentVersion;
+        }
+    }
+})();
+
 // SPA State
 let state = {
     user: null, // { email, username, isManager }
@@ -119,6 +138,9 @@ function setView(view) {
         case 'manager':
             app.innerHTML = managerPanelView();
             break;
+        case 'bookingManagement':
+            app.innerHTML = bookingManagementView();
+            break;
         case 'bookingDetail':
             app.innerHTML = bookingDetailView(state.selectedBookingId);
             break;
@@ -156,6 +178,7 @@ function render() {
             case 'myBookings': content = myBookingsView(); break;
             case 'profile': content = profileView(); break;
             case 'manager': content = managerPanelView(); break;
+            case 'bookingManagement': content = bookingManagementView(); break;
             case 'bookingDetail': content = bookingDetailView(state.selectedBookingId); break;
             case 'tutorDashboard': content = tutorDashboardView(); break;
             default: content = bookView();
@@ -616,6 +639,7 @@ function managerPanelView() {
     return `<h2>Manager Panel</h2>
         <div class="panel-section">
             <h3>All Bookings</h3>
+            <button class="btn btn-primary" onclick="setView('bookingManagement')">Manage Bookings by Date</button>
             <ul class="list">${state.bookings.map(b => {
                 // Handle populated user object
                 let userName = 'Unknown User';
@@ -736,6 +760,88 @@ function managerPanelView() {
                 }).join('')}
             </div>
         </div>`;
+}
+
+// Booking Management View
+function bookingManagementView() {
+    // Group bookings by date
+    const bookingsByDate = {};
+    state.bookings.forEach(booking => {
+        const date = booking.date ? new Date(booking.date).toDateString() : 'No Date';
+        if (!bookingsByDate[date]) {
+            bookingsByDate[date] = [];
+        }
+        bookingsByDate[date].push(booking);
+    });
+    
+    // Sort dates
+    const sortedDates = Object.keys(bookingsByDate).sort((a, b) => {
+        if (a === 'No Date') return 1;
+        if (b === 'No Date') return -1;
+        return new Date(a) - new Date(b);
+    });
+    
+    return `<h2>Booking Management</h2>
+        <button class="btn btn-secondary" onclick="setView('manager')" style="margin-bottom: 20px;">← Back to Manager Panel</button>
+        
+        ${sortedDates.map(date => {
+            const bookings = bookingsByDate[date];
+            return `
+                <div class="panel-section">
+                    <h3>${date}</h3>
+                    <div class="bookings-list">
+                        ${bookings.map(booking => {
+                            // Handle populated user object
+                            let userName = 'Unknown User';
+                            if (booking.user) {
+                                if (typeof booking.user === 'string') {
+                                    userName = booking.user;
+                                } else if (booking.user.firstName && booking.user.surname) {
+                                    userName = `${booking.user.firstName} ${booking.user.surname}`;
+                                }
+                            }
+                            
+                            // Handle populated tutor object
+                            let tutorName = 'Unknown Tutor';
+                            if (booking.tutor) {
+                                if (typeof booking.tutor === 'string') {
+                                    tutorName = booking.tutor;
+                                } else if (booking.tutor.firstName && booking.tutor.surname) {
+                                    tutorName = `${booking.tutor.firstName} ${booking.tutor.surname}`;
+                                } else if (booking.tutor.name) {
+                                    tutorName = booking.tutor.name;
+                                }
+                            }
+                            
+                            // Format the time
+                            let timeDisplay = 'No time specified';
+                            if (booking.timePeriod) {
+                                timeDisplay = booking.timePeriod;
+                            }
+                            
+                            return `
+                                <div class="booking-item" style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px; background: #f9f9f9;">
+                                    <div class="booking-info">
+                                        <strong>${userName}</strong> booked <strong>${booking.subject}</strong> with <strong>${tutorName}</strong>
+                                        <br>
+                                        <span style="color: #666;">Time: ${timeDisplay}</span>
+                                        <br>
+                                        <span style="color: #666;">Status: ${booking.status || 'pending'}</span>
+                                        ${booking.description ? `<br><span style="color: #666;">Description: ${booking.description}</span>` : ''}
+                                    </div>
+                                    <div class="booking-actions" style="margin-top: 10px;">
+                                        <button class="btn btn-danger btn-small" onclick="deleteBooking('${booking._id}')">Delete Booking</button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }).join('')}
+        
+        ${sortedDates.length === 0 ? '<p>No bookings found.</p>' : ''}
+    `;
 }
 
 // Booking Detail View
@@ -1041,6 +1147,16 @@ const API = {
                 'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({ subjects, description })
+        });
+        if (!res.ok) throw new Error((await res.json()).message);
+        return res.json();
+    },
+    async deleteBooking(token, bookingId) {
+        const res = await fetch(`/api/admin/bookings/${bookingId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         });
         if (!res.ok) throw new Error((await res.json()).message);
         return res.json();
@@ -1661,5 +1777,22 @@ async function updateTutorInfo(event) {
         setTimeout(() => {
             render();
         }, 3000);
+    }
+}
+
+async function deleteBooking(bookingId) {
+    if (!confirm('Are you sure you want to delete this booking? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        await API.deleteBooking(state.user.token, bookingId);
+        showSuccess('Booking deleted successfully!');
+        
+        // Refresh manager data to update the bookings list
+        await fetchManagerData();
+        render();
+    } catch (error) {
+        showError(error.message);
     }
 } 
