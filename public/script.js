@@ -373,6 +373,10 @@ function tutorPanelView() {
         bookingsList = '<li><em>No booking requests found for you yet.</em></li>';
     }
     
+    // Get all available subjects for the edit form
+    const availableSubjects = state.subjects.map(s => s.name);
+    const currentSubjects = Array.isArray(currentTutor.subjects) ? currentTutor.subjects : [currentTutor.subjects];
+    
     return `<h2>Tutor Panel</h2>
         <div class="panel-section">
             <h3>Tutor Information</h3>
@@ -380,7 +384,31 @@ function tutorPanelView() {
             <p><strong>Email:</strong> ${currentTutor.email}</p>
             <p><strong>Subjects:</strong> ${Array.isArray(currentTutor.subjects) ? currentTutor.subjects.join(', ') : currentTutor.subjects}</p>
             <p><strong>Description:</strong> ${currentTutor.description || currentTutor.bio || 'No description provided'}</p>
+            
+            <div style="margin-top: 20px;">
+                <button class="btn btn-small" onclick="toggleTutorEditForm()">Edit Information</button>
+            </div>
         </div>
+        
+        <div class="panel-section" id="tutor-edit-form" style="display: none;">
+            <h3>Edit Tutor Information</h3>
+            <form onsubmit="updateTutorInfo(event)">
+                <div class="form-group">
+                    <label for="edit-subjects">Subjects (comma-separated):</label>
+                    <input type="text" id="edit-subjects" value="${currentSubjects.join(', ')}" required />
+                    <small>Available subjects: ${availableSubjects.join(', ')}</small>
+                </div>
+                <div class="form-group">
+                    <label for="edit-description">Description:</label>
+                    <textarea id="edit-description" rows="4" required>${currentTutor.description || currentTutor.bio || ''}</textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Update Information</button>
+                    <button type="button" class="btn btn-secondary" onclick="toggleTutorEditForm()">Cancel</button>
+                </div>
+            </form>
+        </div>
+        
         <div class="panel-section">
             <h3>Booking Requests (You as Tutor)</h3>
             <p class="info-text">These are sessions where students have requested you as their tutor.</p>
@@ -1004,6 +1032,18 @@ const API = {
         });
         if (!res.ok) throw new Error((await res.json()).message);
         return res.json();
+    },
+    async updateTutorInfo(token, subjects, description) {
+        const res = await fetch('/api/tutors/update', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ subjects, description })
+        });
+        if (!res.ok) throw new Error((await res.json()).message);
+        return res.json();
     }
 };
 
@@ -1562,6 +1602,62 @@ async function completeSession(bookingId) {
     } catch (error) {
         console.error('Error completing session:', error);
         app.innerHTML = showError('Failed to complete session: ' + error.message);
+        setTimeout(() => {
+            render();
+        }, 3000);
+    }
+}
+
+// Tutor Information Update Functions
+function toggleTutorEditForm() {
+    const form = document.getElementById('tutor-edit-form');
+    if (form) {
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+async function updateTutorInfo(event) {
+    event.preventDefault();
+    
+    const subjectsInput = document.getElementById('edit-subjects').value.trim();
+    const description = document.getElementById('edit-description').value.trim();
+    
+    if (!subjectsInput || !description) {
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    // Parse subjects (split by comma and trim whitespace)
+    const subjects = subjectsInput.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    
+    if (subjects.length === 0) {
+        alert('Please enter at least one subject');
+        return;
+    }
+    
+    try {
+        const result = await API.updateTutorInfo(state.user.token, subjects, description);
+        
+        // Update the local state
+        const currentTutor = state.tutors.find(t => t.email === state.user.email);
+        if (currentTutor) {
+            currentTutor.subjects = subjects;
+            currentTutor.description = description;
+        }
+        
+        // Show success message
+        let message = 'Tutor information updated successfully!';
+        if (result.subjectsChanged) {
+            message += ' An email notification has been sent to the manager about the subject changes.';
+        }
+        
+        app.innerHTML = showSuccess(message);
+        setTimeout(() => {
+            render();
+        }, 3000);
+    } catch (error) {
+        console.error('Error updating tutor info:', error);
+        app.innerHTML = showError('Failed to update tutor information: ' + error.message);
         setTimeout(() => {
             render();
         }, 3000);

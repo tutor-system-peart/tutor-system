@@ -807,6 +807,60 @@ app.get('/api/admin/tutor-requests', authenticateToken, async (req, res) => {
   }
 });
 
+// Update Tutor Information (Tutor only)
+app.put('/api/tutors/update', authenticateToken, async (req, res) => {
+  try {
+    const { subjects, description } = req.body;
+    
+    if (!subjects || !description) {
+      return res.status(400).json({ message: 'Subjects and description are required' });
+    }
+    
+    // Find the tutor by email (from JWT token)
+    const tutor = await Tutor.findOne({ email: req.user.email });
+    if (!tutor) {
+      return res.status(404).json({ message: 'Tutor not found' });
+    }
+    
+    // Check if subjects have changed
+    const subjectsChanged = JSON.stringify(tutor.subjects.sort()) !== JSON.stringify(subjects.sort());
+    
+    // Update tutor information
+    const oldSubjects = [...tutor.subjects];
+    tutor.subjects = subjects;
+    tutor.description = description;
+    await tutor.save();
+    
+    // If subjects changed, send email to manager
+    if (subjectsChanged) {
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: process.env.EMAIL_USER, // Send to manager email
+        subject: 'Tutor Subject Update Notification',
+        html: `
+          <h2>Tutor Subject Update</h2>
+          <p>A tutor has updated their subject assignments.</p>
+          <p><strong>Tutor:</strong> ${tutor.firstName} ${tutor.surname} (${tutor.email})</p>
+          <p><strong>Previous Subjects:</strong> ${oldSubjects.join(', ')}</p>
+          <p><strong>New Subjects:</strong> ${subjects.join(', ')}</p>
+          <p><strong>Updated Description:</strong> ${description}</p>
+          <p>Please review the changes in the manager panel.</p>
+        `
+      };
+      
+      await transporter.sendMail(mailOptions);
+    }
+    
+    res.json({ 
+      message: 'Tutor information updated successfully', 
+      tutor,
+      subjectsChanged 
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Serve frontend
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
