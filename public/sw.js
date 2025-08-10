@@ -31,9 +31,15 @@ self.addEventListener('fetch', event => {
               event.request.url.includes('/api/')) {
             return fetch(event.request)
               .then(networkResponse => {
-                // Update cache with fresh content
-                caches.open(CACHE_NAME)
-                  .then(cache => cache.put(event.request, networkResponse.clone()));
+                // Only cache successful responses
+                if (networkResponse.status === 200) {
+                  // Clone the response before using it
+                  const responseToCache = networkResponse.clone();
+                  // Update cache with fresh content
+                  caches.open(CACHE_NAME)
+                    .then(cache => cache.put(event.request, responseToCache))
+                    .catch(err => console.log('Cache update failed:', err));
+                }
                 return networkResponse;
               })
               .catch(() => {
@@ -44,6 +50,11 @@ self.addEventListener('fetch', event => {
           return response;
         }
         return fetch(event.request);
+      })
+      .catch(error => {
+        console.log('Fetch failed:', error);
+        // Return a basic response for failed requests
+        return new Response('Network error', { status: 503 });
       })
   );
 });
