@@ -888,7 +888,7 @@
         // Register service worker for cache management
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('/sw.js?v=1.2')
                     .then(registration => {
                         console.log('SW registered: ', registration);
                     })
@@ -909,7 +909,7 @@
             .catch(() => {
                 // Fallback if version endpoint fails
                 const script = document.createElement('script');
-                script.src = 'script.js?v=1.1';
+                script.src = 'script.js?v=1.2';
                 document.body.appendChild(script);
             });
     </script>

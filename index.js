@@ -932,7 +932,7 @@ app.put('/api/tutors/update', authenticateToken, async (req, res) => {
 app.get('/api/version', (req, res) => {
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.json({ 
-    version: '1.1',
+    version: '1.2',
     timestamp: new Date().toISOString(),
     build: process.env.NODE_ENV === 'production' ? 'production' : 'development'
   });

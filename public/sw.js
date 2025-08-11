@@ -1,4 +1,4 @@
-const CACHE_NAME = 'greenbank-tutor-v1.1';
+const CACHE_NAME = 'peart-tutor-v1.2';
 const urlsToCache = [
   '/',
   '/index.html',
