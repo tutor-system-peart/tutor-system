@@ -695,11 +695,10 @@ function managerPanelView() {
             <ul class="list">${state.tutorRequests.map(r => {
                 const tutorName = r.name || (r.firstName && r.surname ? `${r.firstName} ${r.surname}` : 'Unknown Tutor');
                 const subjects = Array.isArray(r.subjects) ? r.subjects.join(', ') : r.subjects;
-                const subjectCount = Array.isArray(r.subjects) ? r.subjects.length : 1;
                 return `<li class="tutor-item">
                     <div class="tutor-info">
                         <strong>${tutorName}</strong> (${r.gmail || r.email})<br>
-                        <strong>Subjects (${subjectCount}):</strong> <span style="word-wrap: break-word; max-width: 100%;">${subjects}</span><br>
+                        <strong>Subjects:</strong> <span style="word-wrap: break-word; max-width: 100%;">${subjects}</span><br>
                         <strong>Experience:</strong> ${r.experience || 'Not specified'} years<br>
                         <strong>Bio:</strong> <span style="word-wrap: break-word; max-width: 100%;">${r.bio || r.description || 'No description provided'}</span>
                     </div>
