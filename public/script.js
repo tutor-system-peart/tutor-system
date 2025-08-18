@@ -714,6 +714,7 @@ function managerPanelView() {
             <ul class="list">${state.tutors.filter(t => t.isApproved !== false).map(t => {
                 const tutorName = t.name || (t.firstName && t.surname ? `${t.firstName} ${t.surname}` : 'Unknown Tutor');
                 // Show the subjects the tutor originally applied for (from their application form)
+                // For existing tutors without originalSubjects, use their current subjects as fallback
                 const appliedSubjects = Array.isArray(t.originalSubjects) && t.originalSubjects.length > 0 ? 
                                        t.originalSubjects.join(', ') : 
                                        (Array.isArray(t.subjects) ? t.subjects.join(', ') : t.subjects) || 'No subjects applied for';
