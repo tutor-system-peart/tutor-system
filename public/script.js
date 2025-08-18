@@ -720,7 +720,7 @@ function managerPanelView() {
                 return `<li class="tutor-item" data-tutor-id="${t._id}">
                     <div class="tutor-info">
                         <strong>${tutorName}</strong> (${t.email})<br>
-                        <strong>Subjects Applied For:</strong> ${appliedSubjects}<br>
+                        <strong>Subjects:</strong> ${appliedSubjects}<br>
                         <strong>Experience:</strong> ${t.experience || 'Not specified'} years<br>
                         <strong>Bio:</strong> ${t.bio || t.description || 'No description provided'}
                     </div>
