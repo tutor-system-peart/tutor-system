@@ -714,8 +714,16 @@ function managerPanelView() {
             <h3>Approved Tutors</h3>
             <ul class="list">${state.tutors.filter(t => t.isApproved !== false).map(t => {
                 const tutorName = t.name || (t.firstName && t.surname ? `${t.firstName} ${t.surname}` : 'Unknown Tutor');
-                const originalSubjects = Array.isArray(t.originalSubjects) ? t.originalSubjects.join(', ') : 
+                // For existing tutors without originalSubjects, use their current subjects
+                const originalSubjects = Array.isArray(t.originalSubjects) && t.originalSubjects.length > 0 ? 
+                                       t.originalSubjects.join(', ') : 
                                        (Array.isArray(t.subjects) ? t.subjects.join(', ') : t.subjects) || 'No subjects applied for';
+                console.log('Tutor data:', { 
+                    name: tutorName, 
+                    originalSubjects: t.originalSubjects, 
+                    subjects: t.subjects, 
+                    displaySubjects: originalSubjects 
+                });
                 return `<li class="tutor-item" data-tutor-id="${t._id}">
                     <div class="tutor-info">
                         <strong>${tutorName}</strong> (${t.email})<br>
