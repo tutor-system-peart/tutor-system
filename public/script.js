@@ -676,7 +676,7 @@ function managerPanelView() {
             }).join('')}</ul>
         </div>
         <div class="panel-section">
-            <h3>Subjects</h3>
+            <h3>Subjects (${state.subjects.length} total)</h3>
             <ul class="list">${state.subjects.map(s => `<li class="subject-item">
                 <span>${s.name}</span>
                 <button class="btn btn-small btn-danger" onclick="removeSubject('${s._id}')">Remove</button>
@@ -695,12 +695,13 @@ function managerPanelView() {
             <ul class="list">${state.tutorRequests.map(r => {
                 const tutorName = r.name || (r.firstName && r.surname ? `${r.firstName} ${r.surname}` : 'Unknown Tutor');
                 const subjects = Array.isArray(r.subjects) ? r.subjects.join(', ') : r.subjects;
+                const subjectCount = Array.isArray(r.subjects) ? r.subjects.length : 1;
                 return `<li class="tutor-item">
                     <div class="tutor-info">
                         <strong>${tutorName}</strong> (${r.gmail || r.email})<br>
-                        <strong>Subjects:</strong> ${subjects}<br>
+                        <strong>Subjects (${subjectCount}):</strong> <span style="word-wrap: break-word; max-width: 100%;">${subjects}</span><br>
                         <strong>Experience:</strong> ${r.experience || 'Not specified'} years<br>
-                        <strong>Bio:</strong> ${r.bio || r.description || 'No description provided'}
+                        <strong>Bio:</strong> <span style="word-wrap: break-word; max-width: 100%;">${r.bio || r.description || 'No description provided'}</span>
                     </div>
                     <div class="tutor-actions">
                         <button class="btn btn-small" onclick="approveTutor('${r._id}')">Approve</button>
@@ -725,10 +726,10 @@ function managerPanelView() {
                         <button class="btn btn-small btn-danger" onclick="removeTutor('${t._id}')">Remove Tutor</button>
                     </div>
                     <div class="subject-assignment">
-                        <label><strong>Assign Subjects:</strong></label>
-                        <div class="subject-checkboxes">
+                        <label><strong>Assign Subjects (${state.subjects.length} available):</strong></label>
+                        <div class="subject-checkboxes" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin: 10px 0; background: #f9f9f9;">
                             ${state.subjects.map(s => `
-                                <label class="checkbox-label">
+                                <label class="checkbox-label" style="display: block; margin: 5px 0; padding: 3px;">
                                     <input type="checkbox" 
                                            id="subject-${t._id}-${s._id}" 
                                            value="${s._id}"
@@ -1003,8 +1004,12 @@ const API = {
         return await res.json();
     },
     async getAllSubjects(token) {
-        // Use /api/subjects for all
-        return this.getSubjects();
+        // Use admin endpoint to get all subjects without pagination
+        const res = await fetch('/api/admin/subjects', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed to fetch all subjects');
+        return await res.json();
     },
     async addSubject(token, name) {
         const res = await fetch('/api/admin/subjects', {

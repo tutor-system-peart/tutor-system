@@ -663,6 +663,20 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
   }
 });
 
+// Get All Subjects (Admin only - no pagination)
+app.get('/api/admin/subjects', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    const subjects = await Subject.find().sort({ name: 1 });
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.json(subjects);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
 // Add Subject (Admin only)
 app.post('/api/admin/subjects', authenticateToken, async (req, res) => {
   try {
