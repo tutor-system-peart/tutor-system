@@ -757,7 +757,7 @@ app.put('/api/admin/tutors/:id/assign-multiple', authenticateToken, async (req, 
     const tutor = await Tutor.findById(req.params.id);
     if (!tutor) return res.status(404).json({ message: 'Tutor not found' });
     
-    // Update tutor's subjects to the selected ones
+    // Update tutor's assigned subjects (keep originalSubjects unchanged)
     tutor.subjects = subjects.map(s => s.name);
     await tutor.save();
     
